@@ -3,10 +3,10 @@ echo Starting Traveler Registration System...
 echo.
 
 REM Set environment variables
-set DATABASE_URL=postgresql://postgres:your_password@localhost:5432/traveler_registration
+set DATABASE_URL=postgresql://postgres:qwerty@localhost:5432/traveler_registration
 set FLASK_APP=main.py
 set FLASK_ENV=production
-set SESSION_SECRET=your_secret_key_here
+set SESSION_SECRET=e64dd920454190dac61dab60e6e2b42d
 
 REM Activate virtual environment if it exists
 if exist venv\Scripts\activate.bat (
