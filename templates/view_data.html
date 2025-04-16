@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-table me-2"></i>Registered Travelers</h4>
+        <div>
+            <button class="btn btn-sm btn-light me-1" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-1"></i> Export to Excel
+            </button>
+            <a href="{{ url_for('export_csv') }}" class="btn btn-sm btn-light me-1">
+                <i class="fas fa-file-csv me-1"></i> Export to CSV
+            </a>
+            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#backupModal">
+                <i class="fas fa-database me-1"></i> Backup/Restore
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="travelersTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Telephone</th>
+                        <th>Email</th>
+                        <th>House</th>
+                        <th>Booking Sites</th>
+                        <th>Registration Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be loaded via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Backup and Restore Modal -->
+<div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="backupModalLabel">Database Backup and Restore</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <h6><i class="fas fa-download me-1"></i> Create Backup</h6>
+                    <p class="small text-muted">Create a backup of the current database state.</p>
+                    <a href="{{ url_for('backup_database') }}" class="btn btn-primary">
+                        <i class="fas fa-download me-1"></i> Create Backup
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <div>
+                    <h6><i class="fas fa-upload me-1"></i> Restore from Backup</h6>
+                    <p class="small text-muted">Restore the database from a previous backup. This will overwrite current data.</p>
+                    
+                    <button type="button" class="btn btn-info mb-3" onclick="createBackup()">
+                        <i class="fas fa-sync me-1"></i> Refresh Backup List
+                    </button>
+                    
+                    <form action="{{ url_for('restore_database') }}" method="post" onsubmit="return confirm('Warning: This will overwrite current data. Continue?');">
+                        <div class="mb-3">
+                            <label for="backup_file" class="form-label">Select Backup</label>
+                            <select name="backup_file" id="backup_file" class="form-select" required>
+                                <option value="">Select a backup file...</option>
+                                {% for backup in backups %}
+                                <option value="{{ backup }}">{{ backup.split('/')[-1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-upload me-1"></i> Restore
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDataTable();
+    });
+</script>
+{% endblock %}
