@@ -3,6 +3,9 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+
+
 # Association table for many-to-many relationship between travelers and booking sites
 traveler_booking_sites = db.Table('traveler_booking_sites',
     db.Column('traveler_id', db.Integer, db.ForeignKey('traveler.id'), primary_key=True),
@@ -32,6 +35,8 @@ class Traveler(db.Model):
     email = db.Column(db.String(120), nullable=False)
     house_number = db.Column(db.Integer, nullable=False)
     registration_date = db.Column(db.DateTime, default=datetime.now)
+    departure_date = db.Column(db.DateTime, nullable=True)  # Added this field
+    is_active = db.Column(db.Boolean, default=True)  # Added to track if traveler has departed
     
     # Many-to-many relationship with booking sites
     booking_sites = db.relationship('BookingSite', secondary=traveler_booking_sites,

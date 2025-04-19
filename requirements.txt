@@ -1,0 +1,5 @@
+flask
+flask_sqlalchemy
+flask_cors
+openpyxl
+python-dotenv

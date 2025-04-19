@@ -202,10 +202,36 @@ def get_travelers():
             'email': traveler.email,
             'house_number': traveler.house_number,
             'booking_sites': ", ".join(booking_sites),
-            'registration_date': traveler.registration_date.strftime('%Y-%m-%d %H:%M:%S')
+            'registration_date': traveler.registration_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'departure_date': traveler.departure_date.strftime('%Y-%m-%d %H:%M:%S') if traveler.departure_date else '',
+            'status': 'Departed' if not traveler.is_active else 'Active'
         })
     
     return jsonify(result)
+    
+    
+@app.route('/mark_departed/<int:traveler_id>', methods=['POST'])
+@login_required
+def mark_departed(traveler_id):
+    traveler = Traveler.query.get_or_404(traveler_id)
+    
+    # Get departure date from form or use current date if not provided
+    departure_date_str = request.form.get('departure_date')
+    if departure_date_str:
+        try:
+            departure_date = datetime.strptime(departure_date_str, '%Y-%m-%d')
+        except ValueError:
+            departure_date = datetime.now()
+    else:
+        departure_date = datetime.now()
+    
+    traveler.departure_date = departure_date
+    traveler.is_active = False
+    
+    db.session.commit()
+    flash(f'Traveler {traveler.first_name} {traveler.last_name} marked as departed.', 'success')
+    return redirect(url_for('view_data'))    
+
 
 @app.route('/export_csv')
 @login_required
@@ -220,7 +246,7 @@ def export_csv():
     
     with open(temp_file.name, 'w', newline='') as csvfile:
         fieldnames = ['ID', 'First Name', 'Last Name', 'Telephone', 'Email', 
-                     'House Number', 'Booking Sites', 'Registration Date']
+                     'House Number', 'Booking Sites', 'Registration Date', 'Departure Date', 'Status']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()
@@ -234,14 +260,17 @@ def export_csv():
                 'Email': traveler.email,
                 'House Number': traveler.house_number,
                 'Booking Sites': booking_sites,
-                'Registration Date': traveler.registration_date.strftime('%Y-%m-%d %H:%M:%S')
+                'Registration Date': traveler.registration_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'Departure Date': traveler.departure_date.strftime('%Y-%m-%d %H:%M:%S') if traveler.departure_date else '',
+                'Status': 'Departed' if not traveler.is_active else 'Active'
             })
     
     return send_file(temp_file.name, 
                      mimetype='text/csv',
                      download_name='travelers_data.csv',
                      as_attachment=True)
-
+                     
+                     
 @app.route('/backup_database')
 @login_required
 def backup_database():

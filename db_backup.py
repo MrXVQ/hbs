@@ -28,7 +28,7 @@ def create_backup():
     
     # Get all travelers
     cursor.execute('''
-        SELECT id, first_name, last_name, telephone, email, house_number, registration_date
+        SELECT id, first_name, last_name, telephone, email, house_number, registration_date, departure_date, is_active
         FROM traveler
     ''')
     travelers = [dict(row) for row in cursor.fetchall()]
@@ -118,8 +118,9 @@ def restore_from_backup(backup_file):
                     reg_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             cursor.execute('''
-                INSERT INTO traveler (id, first_name, last_name, telephone, email, house_number, registration_date)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO traveler (id, first_name, last_name, telephone, email, house_number, 
+                                     registration_date, departure_date, is_active)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''', (
                 traveler['id'],
                 traveler['first_name'],
@@ -127,7 +128,9 @@ def restore_from_backup(backup_file):
                 traveler['telephone'],
                 traveler['email'],
                 traveler['house_number'],
-                reg_date
+                reg_date,
+                traveler.get('departure_date'),  # Using get() to handle older backups without this field
+                traveler.get('is_active', True)  # Default to True for older backups
             ))
             
             # Restore traveler's booking sites

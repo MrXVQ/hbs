@@ -13,21 +13,53 @@ if exist venv\Scripts\activate.bat (
     call venv\Scripts\activate.bat
     echo Virtual environment activated.
 ) else (
-    echo Warning: Virtual environment not found. Please create it with:
-    echo python -m venv venv
-    echo Then install required packages with:
-    echo pip install flask flask-login flask-sqlalchemy flask-wtf email-validator psycopg2-binary
+    echo Virtual environment not found!
     pause
     exit /b
 )
 
 REM Run the application
 echo Starting the application...
-python main.py
+start /min python main.py
 
-REM Keep window open if there's an error
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo An error occurred. Press any key to exit.
-    pause > nul
+REM Wait for the server to start
+echo Waiting for server to start...
+timeout /t 3 > nul
+
+REM Check if server is up
+curl --silent --head http://127.0.0.1:5000 | findstr /i "200 OK" > nul
+
+if %errorlevel%==0 (
+    set URL=http://127.0.0.1:5000
+) else (
+    set URL=http://192.168.33.9:5000
 )
+
+REM Try to open in browsers manually if WHERE fails
+
+set "FIREFOX=C:\Program Files\Mozilla Firefox\firefox.exe"
+set "CHROME=C:\Program Files\Google\Chrome\Application\chrome.exe"
+set "EDGE=C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+
+if exist "%FIREFOX%" (
+    echo Opening in Firefox...
+    start "" "%FIREFOX%" "%URL%"
+    exit /b
+)
+
+if exist "%CHROME%" (
+    echo Opening in Chrome...
+    start "" "%CHROME%" "%URL%"
+    exit /b
+)
+
+if exist "%EDGE%" (
+    echo Opening in Edge...
+    start "" "%EDGE%" "%URL%"
+    exit /b
+)
+
+REM None found
+echo No supported browser found! Please open %URL% manually.
+pause
+exit /b

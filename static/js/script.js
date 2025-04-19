@@ -103,7 +103,30 @@ function initializeDataTable() {
                         }
                     },
                     { data: 'booking_sites' },
-                    { data: 'registration_date' }
+                    { data: 'registration_date' },
+                    { data: 'departure_date' },
+                    { 
+                        data: 'status',
+                        render: function(data) {
+                            if (data === 'Active') {
+                                return `<span class="badge bg-success">${data}</span>`;
+                            } else {
+                                return `<span class="badge bg-secondary">${data}</span>`;
+                            }
+                        }
+                    },
+                    { 
+                        data: null,
+                        render: function(data, type, row) {
+                            if (row.status === 'Active') {
+                                return `<button class="btn btn-sm btn-warning mark-departed" data-id="${row.id}" data-name="${row.first_name} ${row.last_name}">
+                                            <i class="fas fa-sign-out-alt"></i> Mark Departed
+                                        </button>`;
+                            } else {
+                                return '';
+                            }
+                        }
+                    }
                 ],
                 order: [[0, 'desc']],
                 responsive: true,
@@ -126,6 +149,24 @@ function initializeDataTable() {
                         }
                     }
                 ]
+            });
+            
+            // Add event listener for the "Mark Departed" buttons
+            $('#travelersTable').on('click', '.mark-departed', function() {
+                const travelerId = $(this).data('id');
+                const travelerName = $(this).data('name');
+                
+                $('#travelerName').text(travelerName);
+                
+                // Set current date as default
+                const today = new Date().toISOString().split('T')[0];
+                $('#departure_date').val(today);
+                
+                // Update form action
+                $('#departureForm').attr('action', `/mark_departed/${travelerId}`);
+                
+                // Show departure modal
+                $('#departureModal').modal('show');
             });
         })
         .catch(error => console.error('Error loading travelers:', error));
